@@ -5,7 +5,7 @@ def fun1(x):
     return np.exp(x) #define exp^(x)
 
 def fun2(x):
-    return np.exp(10*x) #define exp^(0.01x)
+    return np.exp(10*x) #define exp^(10*x)
 
 def fun3(x):
     return np.sin(x)
