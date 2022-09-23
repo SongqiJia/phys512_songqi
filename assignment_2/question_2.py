@@ -62,13 +62,8 @@ def integrate_old(fun,a,b,tol):
         return int1+int2
 
 ans_new = integrate(exp_int,1,2,1e-6)
-print(ans_new)
+print('The integrated value is: ', ans_new)
 # ans_old = integrate_old(exp_int,1,2,1e-6)
-# print(ans_old)
-print(function_call)
+# print('The integrated value is: ', ans_old)
+print('The number of function calls is: ', function_call)
 
-
-# ans=integrate_old(offset_gauss,-4,6,1e-6)
-# ans2=integrate_old(offset_gauss,-4,0,1e-6)+integrate(offset_gauss,0,6,1e-6)
-# print('answer was ',ans,ans2,ans-(10+np.sqrt(2*np.pi)))
-# #print('answer was ',ans,ans-(np.exp(1)-np.exp(-1)))
