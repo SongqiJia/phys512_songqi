@@ -83,11 +83,11 @@ for j in range(5):
         p[jj]=p[jj]+dp[jj]
     print(p,err)
 
-plt.clf()
-plt.plot(t,x,'.')
-plt.plot(t,pred)
-plt.savefig('tri_lorentz_fit.png')
-plt.show()
+# plt.clf()
+# plt.plot(t,x,'.')
+# plt.plot(t,pred)
+# plt.savefig('tri_lorentz_fit.png')
+# plt.show()
 
 #same as in linear case as discussed above
 residual = x-pred
@@ -95,7 +95,22 @@ N=np.mean((residual)**2)
 par_errs=np.sqrt(N*np.diag(np.linalg.inv(lhs)))
 print(N, par_errs)
 
-plt.clf()
-plt.plot(t,residual)
-plt.savefig('residual.png')
-plt.show()
+# plt.clf()
+# plt.plot(t,residual)
+# plt.savefig('residual.png')
+# plt.show()
+
+cov = N*np.linalg.inv(lhs)
+param_with_err = np.random.multivariate_normal(p,cov)
+x_with_err = tri_lorentz(param_with_err,t)
+chisq = np.sum((x-pred)**2/N)
+chisq_with_error = np.sum((x-x_with_err)**2/N)
+print(chisq,chisq_with_error,np.abs(chisq-chisq_with_error))
+np.save('cov_matrix',cov)
+np.save('sigma_squred', N)
+# plt.clf()
+# plt.plot(t,x,'.')
+# plt.plot(t,pred,c='r')
+# plt.plot(t,x_with_err,c='b')
+# plt.savefig('param_with_error.png')
+# plt.show()
