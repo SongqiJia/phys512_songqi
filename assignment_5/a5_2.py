@@ -55,41 +55,45 @@ ell=planck[:,0]
 spec=planck[:,1]
 errs=0.5*(planck[:,2]+planck[:,3])
 
-#from the raw data graph guess initial values
+#use part 1 for initial guess
 p0=np.asarray([60,0.02,0.1,0.05,2.00e-9,1.0])
+# p0=np.asarray( [69, 0.022, 0.12, 0.06, 2.1e-9, 0.95]) #another initial guess
 
 #copied from newton.py
 p=p0.copy()
-for j in range(10):
+for j in range(5):
     pred,grad=calc_camb(p,ell)
-    r=spec-pred
-    err=(r**2).sum()
-    r=np.matrix(r).transpose()
+    resid=spec-pred
+    r=np.matrix(resid).transpose()
     grad=np.matrix(grad)
 
     noise_inverse = np.matrix(np.diag(1/errs))
     lhs=grad.transpose()*noise_inverse*grad
     rhs=grad.transpose()*noise_inverse*r
-    dp=np.linalg.inv(lhs)*(rhs)
+    dp=np.linalg.pinv(lhs)*(rhs)
+
+    # u,s,v=np.linalg.svd(grad,0)
+    # unu = u.T@noise_inverse@u
+    # dp=v.T@np.matrix(np.diag(1/s))@np.linalg.inv(unu)@u.T@noise_inverse@r
+
     for jj in range(p.size):
         p[jj]=p[jj]+dp[jj]
-    print(p,err)
+    chisq=np.sum((resid/errs)**2)
+    print(p,chisq)
 
 
 #same as in linear case as discussed above
 residual = spec-pred
-N=np.mean((residual)**2)
-par_errs=np.sqrt(N*np.diag(np.linalg.inv(lhs)))
-print(N, par_errs)
+par_errs=np.sqrt(np.diag(np.linalg.inv(lhs)))
+print(par_errs)
 f = open("planck_fit_params.txt", "a")
-f.write("The best fit params are: ", p)
-f.write("The erros are: ", par_errs)
+f.write(f"The best fit params are: {p}")
+f.write(f"The erros are: {par_errs}")
 f.write('\n')
 f.close()
 
 
-cov = N*np.linalg.inv(lhs)
-chisq = np.sum((spec-pred)**2/N)
+cov = np.linalg.inv(lhs)
+chisq=np.sum( (residual/errs)**2)
 print("chisq is ",chisq," for ",len(spec)-len(p0)," degrees of freedom.")
 np.save('cov_matrix',cov)
-np.save('sigma_squred', N)
