@@ -56,35 +56,57 @@ spec=planck[:,1]
 errs=0.5*(planck[:,2]+planck[:,3])
 
 #use part 1 for initial guess
-p0=np.asarray([60,0.02,0.1,0.05,2.00e-9,1.0])
-# p0=np.asarray( [69, 0.022, 0.12, 0.06, 2.1e-9, 0.95]) #another initial guess
+# p0=np.asarray([60,0.02,0.1,0.05,2.00e-9,1.0])
+p0=np.asarray( [69, 0.022, 0.12, 0.06, 2.1e-9, 0.95]) #another initial guess
 
-#copied from newton.py
+numda = 1 #numda in LM method
+cur_chisq = 1e9
+
 p=p0.copy()
-for j in range(5):
+for j in range(20):
     pred,grad=calc_camb(p,ell)
     resid=spec-pred
     r=np.matrix(resid).transpose()
     grad=np.matrix(grad)
 
-    noise_inverse = np.matrix(np.diag(1/errs))
+    #get the chisq now
+    chisq = np.sum((resid/errs)**2)
+
+
+    noise_inverse = np.matrix(np.diag(1/errs**2))
     lhs=grad.transpose()*noise_inverse*grad
+    cov = np.linalg.inv(lhs)
+    lhs += numda*np.diag(np.diag(grad.transpose()*noise_inverse*grad))
+    lhs = np.matrix(lhs)
     rhs=grad.transpose()*noise_inverse*r
-    dp=np.linalg.pinv(lhs)*(rhs)
+    dp=np.linalg.inv(lhs)*(rhs)
+
+    if chisq > cur_chisq:
+        print("LM Increase", numda)
+        if numda == 0:
+            numda = 1
+        else:
+            numda *= 2
+    else:
+        print("LM Decrease", numda)
+        if numda < 0.1:
+            numda = 0
+        else:
+            numda *= 0.3
+        #update params
+        for jj in range(p.size):
+            p[jj]=p[jj]+dp[jj]
 
     # u,s,v=np.linalg.svd(grad,0)
     # unu = u.T@noise_inverse@u
     # dp=v.T@np.matrix(np.diag(1/s))@np.linalg.inv(unu)@u.T@noise_inverse@r
 
-    for jj in range(p.size):
-        p[jj]=p[jj]+dp[jj]
-    chisq=np.sum((resid/errs)**2)
     print(p,chisq)
 
 
 #same as in linear case as discussed above
 residual = spec-pred
-par_errs=np.sqrt(np.diag(np.linalg.inv(lhs)))
+par_errs=np.sqrt(np.diag(np.linalg.inv(cov)))
 print(par_errs)
 f = open("planck_fit_params.txt", "a")
 f.write(f"The best fit params are: {p}")
@@ -93,7 +115,7 @@ f.write('\n')
 f.close()
 
 
-cov = np.linalg.inv(lhs)
 chisq=np.sum( (residual/errs)**2)
 print("chisq is ",chisq," for ",len(spec)-len(p0)," degrees of freedom.")
 np.save('cov_matrix',cov)
+np.save('best_fit_pars',p)
