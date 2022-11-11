@@ -1,0 +1,21 @@
+import numpy as np
+from matplotlib import pyplot as plt
+n=100000
+# print(n)
+x=np.arange(n)
+x[n//2:]=x[n//2:]-n
+
+# kernel=np.exp(-0.5*(x**2)/(10**2)) #make a Gaussian kernel
+# plt.plot(kernel)
+# plt.show()
+
+y = np.exp(-0.5*(x[50000]**2)/(10**2))
+print(y)
+print(x[50000])
+print(-0.5*(x[50000]**2)/(10**2))
+print(x[50000]**2)
+print((-50000)**2)
+
+# x=-50000
+# print(np.exp(-0.5*((x**2)/(10**2))))
+# print(x**2)
